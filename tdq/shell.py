@@ -125,6 +125,23 @@ class TdQuery(cmd.Cmd):
         pass
 
 
+    def render_error(self, query, error):
+        """ rendering an query from erro info
+        """
+        CRED = '\033[91m'
+        CEND = '\033[0m'
+        r = re.match(r"Query .* failed: line (\d+):(\d+): ", error)
+        if not r:
+            return query
+        row = int(r.group(1))
+        col = int(r.group(2))
+
+        tmp = query.split("\n")
+        target = tmp[row - 1]
+        tmp[row - 1] = target[:col-1] + CRED + target[col-1:] + CEND
+        return "\n".join(tmp)
+
+
     def execute_query(self, cmds):
         with tdclient.Client(apikey=self.apikey,endpoint=self.endpoint) as client:
             for cmd in cmds:
@@ -142,12 +159,17 @@ class TdQuery(cmd.Cmd):
                 if query_str == '':
                     continue
 
-                print(f"query = {query_str}")
+                # print(f"query = {query_str}")
                 job = client.query(self.database, query_str, type="presto")
                 # sleep until job's finish
                 job.wait()
-                if not job.result_schema:
-                    print("Unknown query or query error", file=self.stdout)
+                job_detail = client.api.show_job(job.id)
+                if job.error():
+                    query = job_detail['query']
+                    error = job_detail['debug']['stderr'] 
+                    # print("Unknown query or query error", file=sys.stderr)
+                    print(error, file = sys.stderr)
+                    print(self.render_error(query, error), file = sys.stderr)
                 else:
                     result = PrettyTable(list(map(lambda x : x[0],job.result_schema)))
                     result.align = "l"
@@ -158,8 +180,12 @@ class TdQuery(cmd.Cmd):
 
                     self.print_table(result,mode)
 
-                    print(f"({row_num} row{'s'[:row_num^1]})")
+                    print(f"({row_num} row{'s'[:row_num^1]})\n")
+                    # print(job_detail['debug']['cmdout'])
 
+            print("")
+
+            # clear buffer
             self.buffer = ''
 
 
