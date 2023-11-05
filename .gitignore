@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# wheel
+build/
+dist/
+dbtdoc.egg-info/
+
+# python
+venv/
+.venv/
+.env
+
+# gitlab
+.cache/
