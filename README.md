@@ -39,11 +39,24 @@ Currently, below commands are supported:
 - display <mode>: change current display mode. Value is among `horizontal`,`vertical` or `None`(auto)
 - quit: quit the shell (same with Ctrl-D)
 
-Use -h to see all options
+Use `-h` to see all options
 
 
 ## Configuration
 tdq will utilize the file ~/.td/td.conf created by td-client for default configuration
+
+For example, a typical td.conf looks like below:
+```td.conf
+[account]
+  apikey = <apikey>
+  endpoint = https://api.treasuredata.co.jp/
+  database = <default database>
+```
+
+Alternately, apikey and endpoint could be defined by environmental variables `TD_API_KEY` and `TD_SERVER`
+Endpoint also could be define by `-e` option.
+
+
 
 
 ## Other

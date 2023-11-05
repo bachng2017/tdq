@@ -6,7 +6,7 @@ __pycache__/
 # wheel
 build/
 dist/
-dbtdoc.egg-info/
+tdq.egg-info/
 
 # python
 venv/
