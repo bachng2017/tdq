@@ -15,3 +15,5 @@ venv/
 
 # gitlab
 .cache/
+
+.bak
