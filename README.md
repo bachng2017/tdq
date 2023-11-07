@@ -32,7 +32,8 @@ Run the shell with predefined sql queries and write the result ot a CSV file
 tdq -f input.sql -o output.csv --output-format CSV_HEADER
 ```
 
-Besides valid commands, all user's inputs are consdered SQL queries.
+Besides valid commands, all user's inputs are considered SQL queries.
+
 Currently, below commands are supported:
 - help: display valid commands
 - use <database> : change current database. This could be set by -d option or read from default TD client config file
@@ -55,7 +56,6 @@ For example, a typical td.conf looks like below:
 
 Alternately, apikey and endpoint could be defined by environmental variables `TD_API_KEY` and `TD_SERVER`
 Endpoint also could be define by `-e` option.
-
 
 
 

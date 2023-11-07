@@ -14,7 +14,7 @@ setup (
     version=tdq._version.__version__,
     license='Apache',
     install_requires=[
-        "setuptools>=40.3.0",
+        "setuptools>=40.3.0","td-client","prompt-toolkit"
     ],
     author='bachng',
     author_email='bachng@gmail.com',
