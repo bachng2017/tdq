@@ -149,15 +149,17 @@ class TDQuery:
         if _mode == 'horizontal':
             print(table,file=self.stdout)
 
+        # print the table in vertical direction
         if _mode == 'vertical':
             formatted = []
             max_field_width = max([len(x) for x in table._field_names])
             for row_i, row in enumerate(table._rows):
-                formatted.append('*************************** %i. row ***************************' % (row_i + 1, ))
+                formatted.append('-[ RECORD %i ]' % (row_i + 1, ))
                 for i, field in enumerate(table._field_names):
-                    formatted.append("%s: %s" % (field.rjust(max_field_width), row[i]))
+                    formatted.append("%s | %s" % (field.ljust(max_field_width), row[i]))
             print('\n'.join(formatted),file=self.stdout)
 
+        # print the table in CSV format to the current stdout (could be a file)
         if _mode == 'csv':
             if output_format == "CSV":
                 writer = csv.writer(self.stdout,quoting=csv.QUOTE_ALL)
@@ -289,6 +291,7 @@ class TDQuery:
                             row_num += 1
 
                         self.print_table(result, mode)
+                        print()
                         print(f"({row_num} row{'s'[:row_num^1]})\n")
                 except Exception as e:
                     print(e, file=sys.stderr)
