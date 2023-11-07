@@ -1,4 +1,5 @@
 ![Downloads](https://static.pepy.tech/badge/tdq)
+[![PyPI version](https://badge.fury.io/py/tdq.svg)](https://badge.fury.io/py/tdq)
 
 
 # tdq
@@ -10,7 +11,7 @@ pip install tdq
 ```
 
 ## Features
-A wrapper for td-client that focus on SQL query with following feature
+A wrapper for td-client that focus on SQL query with following features
 - bash-like history-list editing (e.g. Control-P scrolls back to the last command, Control-N forward to the next one, Control-F moves the cursor to the right non-destructively, Control-B moves the cursor to the left non-destructively, etc.).
 - directly execute SQL to the remote TD endpoint
 - support multi-line queries
@@ -21,6 +22,15 @@ Start the shell with default configuration
 ```
 tdq
 ```
+
+or start the shell with a specific database
+```
+tdq -d sample_database
+```
+
+Exit the shell by `quit` command or Ctrl-D
+
+
 
 See all the command parameters:
 ```
@@ -35,7 +45,6 @@ tdq -f input.sql -o output.csv --output-format CSV_HEADER
 Besides valid commands, all user's inputs are considered SQL queries.
 
 Currently, below commands are supported:
-- help: display valid commands
 - use <database> : change current database. This could be set by -d option or read from default TD client config file
 - display <mode>: change current display mode. Value is among `horizontal`,`vertical` or `None`(auto)
 - quit: quit the shell (same with Ctrl-D)
