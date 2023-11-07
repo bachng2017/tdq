@@ -73,16 +73,41 @@ class TDQuery:
         self.prompt = f"TdQuery({self.database}) > "
 
 
-    def do_xxx(self, args):
-        print(f"this is method xxx, called with {args}")
+    def do_help(self, args):
+        """ help command
+        """
+        cmd_list = sorted(list(filter(lambda x: x.startswith('do_'), dir(self))))
+        if args == '':
+            col_num = 10
+            print("Internal commands (type help <topic>):")
+            print("======================================\n")
+
+            for i in range(0, len(cmd_list), col_num):
+                print(' '.join(f"{s[3:]:10}" for s in cmd_list[i:i+col_num]))
+            print("\n")
+        else:
+            if hasattr(self,'help_' + args):
+                getattr(self,'help_' + args)()
+            else:
+                print("Unknown command")
+
+    def help_help(self):
+        print("print out all availabel commands")
+
 
     def do_quit(self, args):
         self.exit_loop = True
         print("Bye.")
 
+    def help_quit(self):
+        print("Quit the shell")
+
 
     def do_exit(self, args):
         self.do_quit(args)
+
+    def help_exit(self):
+        self.help_quit()
 
 
     def do_display(self, args):
@@ -92,11 +117,22 @@ class TDQuery:
         if self.display_mode != '': mode = self.display_mode
         print(f"current display mode is {mode}")
 
+
+    def help_display(self):
+        print("change output mode. Usage: display <mode>")
+        print("Valid mode is varitcal, horizontal, csv or empty string")
+
+
     def do_use(self, args):
+        """ Change the current database
+        """
         if args != '':
             self.database = args
             self.prompt = f"TdQuery({self.database}) > "
         print(f"current database is {self.database}")
+
+    def help_use(self):
+        print("Change the current database. Usage: use <sample_database>")
 
 
     def print_table(self, table, mode = None):
@@ -351,6 +387,7 @@ def main():
     print(f"*** TDQuery shell. Ctrl-D to quit")
     print(f"*** endpoint = {shell.endpoint}")
     print(f"*** apikey(last 3 digits) = ...{shell.apikey[-3:]}")
+    print()
     shell.cmdloop()
 
 
