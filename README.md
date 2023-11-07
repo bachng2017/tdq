@@ -64,7 +64,7 @@ For example, a typical td.conf looks like below:
 ```
 
 Alternately, apikey and endpoint could be defined by environmental variables `TD_API_KEY` and `TD_SERVER`
-Endpoint also could be define by `-e` option.
+Endpoint also could be defined by `-e` option from command line.
 
 
 

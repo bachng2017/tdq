@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.2
+- add engine option
+
 ## 0.1.1
 - use prompt-toolkit instead of Python cmd module
 

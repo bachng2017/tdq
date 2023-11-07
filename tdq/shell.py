@@ -34,6 +34,8 @@ class TDQuery:
         self.stdin = stdin
         self.stdout = stdout
 
+        self.engine = "presto"
+
         self.exec_query = True
         self.exec_command = False
         self.exit_loop = False
@@ -64,12 +66,15 @@ class TDQuery:
         if 'account' not in self.config:
             self.config['account'] = {}
         if 'database' not in self.config['account']: self.config['account']['database'] = ''
-        if 'apikey' not in self.config['account']: self.config['account']['endpoint'] = ''
+        if 'apikey' not in self.config['account']: self.config['account']['apikey'] = ''
         if 'endpoint' not in self.config['account']: self.config['account']['endpoint'] = ''
+        if 'engine' not in self.config['account']: self.config['account']['engine'] = ''
 
         self.apikey = os.getenv("TD_API_KEY") or self.config['account']['apikey']
         self.endpoint = ARGS.endpoint or os.getenv("TD_SERVER") or self.config['account']['endpoint']
         self.database = ARGS.database or self.config['account']['database']
+        self.engine = ARGS.database or self.config['account']['engine'] or self.engine
+
         self.prompt = f"TdQuery({self.database}) > "
 
 
@@ -91,8 +96,23 @@ class TDQuery:
             else:
                 print("Unknown command")
 
+
     def help_help(self):
         print("print out all availabel commands")
+
+
+    def do_engine(self, args):
+        if not args in ["presto", "hive", ""]:
+            print("Invalid option")
+            return
+        if args != "":
+            self.engine = args
+
+        print(f"Current engine is {self.engine}")
+
+
+    def help_engine(self):
+        print("Set current SQL engine. Value should be presto(default) or hive")
 
 
     def do_quit(self, args):
@@ -111,16 +131,22 @@ class TDQuery:
 
 
     def do_display(self, args):
-        if args in ['','vertical','horizontal','csv']:
-            self.display_mode = args
+        """ display command
+        """
+        if not args in ['','vertical','horizontal','csv']:
+            print("Invalid option")
+            return
         mode = "<auto>"
-        if self.display_mode != '': mode = self.display_mode
+        if args in ['horizontal','vertical','csv']:
+            self.display_mode = args
         print(f"current display mode is {mode}")
 
 
     def help_display(self):
+        """ help for display command
+        """
         print("change output mode. Usage: display <mode>")
-        print("Valid mode is varitcal, horizontal, csv or empty string")
+        print("Valid mode is horizontal(default), vertical, csv or empty string")
 
 
     def do_use(self, args):
@@ -132,14 +158,17 @@ class TDQuery:
         print(f"current database is {self.database}")
 
     def help_use(self):
+        """ help for use command
+        """
         print("Change the current database. Usage: use <sample_database>")
+
+
 
 
     def print_table(self, table, mode = None):
         """ Given a PrettyTable table instance, format each row vertically (similar to mysql's \G display)
             mode: overwrite client display mode if defined
         """
-
         if self.display_mode == '':
             _mode = mode
         else:
@@ -348,6 +377,7 @@ parser.add_argument(
 parser.add_argument(
     "--output-format",
     type=str,
+    choices = ["CSV","CSV_HEADER","CSV_UNQUOTED","CSV_HEADER_UNQUOTED"],
     help="format the CSV output. Should be one of CSV,CSV_HEADER,CSV_UNQUOTED,CSV_HEADER_UNQUOTED"
 )
 parser.add_argument(
@@ -360,6 +390,13 @@ parser.add_argument(
     type=str,
     default="https://api.treasuredata.co.jp/",
     help="TreasureData endpoint (default: https://api.treasuredata.co.jp/)"
+)
+parser.add_argument(
+    "-g","--engine",
+    type=str,
+    default="presto",
+    choices = ["presto","hive"],
+    help="SQL query engine. Should be presto or hive"
 )
 parser.add_argument(
     "-v","--version",
