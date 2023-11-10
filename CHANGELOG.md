@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6
+- use sqlparse for more effective parsing
+
+## 0.1.5
+- fix Ctrl-E key-binding
+
 ## 0.1.4
 - add complete-from-history
 - fix some key-bindings

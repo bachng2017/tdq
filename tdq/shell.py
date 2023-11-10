@@ -14,6 +14,7 @@ from pygments.lexers.sql import SqlLexer
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.filters import Condition
+import sqlparse
 
 PROG = "tdq"
 # config file (created by td client)
@@ -318,7 +319,9 @@ class TDQuery:
         """ process user input and write results to stdout
         """
         # simply split the input. Need to care about the ; char is inside a string
-        cmd_list = re.findall(r'\w.+?;|\w.+?\\G|\w.+?$',cmds,re.DOTALL)
+        # cmd_list = re.findall(r'\w.+?;|\w.+?\\G|\w.+?$',cmds,re.DOTALL)
+
+        cmd_list = sqlparse.split(cmds)
 
         for cmd in cmd_list:
             with tdclient.Client(apikey=self.apikey,endpoint=self.endpoint) as client:
@@ -360,6 +363,8 @@ class TDQuery:
 
                         self.print_table(result, mode)
                         print(f"({row_num} row{'s'[:row_num^1]})\n")
+                except KeyboardInterrupt:
+                    print("Query aborted by user")
                 except Exception as e:
                     print(e, file=sys.stderr)
 
