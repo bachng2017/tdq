@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+- add complete-from-history
+- fix some key-bindings
+
 ## 0.1.3
 - add engine option
 

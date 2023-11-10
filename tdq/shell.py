@@ -12,7 +12,8 @@ import re
 from tdq import _version
 from pygments.lexers.sql import SqlLexer
 from prompt_toolkit.lexers import PygmentsLexer
-
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.filters import Condition
 
 PROG = "tdq"
 # config file (created by td client)
@@ -44,12 +45,49 @@ class TDQuery:
             history=FileHistory(os.path.expanduser(TDQ_HISTORY)),
             lexer=PygmentsLexer(SqlLexer))
 
+
         self.kb = KeyBindings()
+
         @self.kb.add('c-c')
         def _(event):
             self.exec_query = False
             self.exec_command = False
             event.current_buffer.validate_and_handle()
+
+
+        @self.kb.add('c-a')
+        def _(event):
+            b = event.current_buffer
+            col = b.document.cursor_position_col
+            relative_begin_index = b.document.get_start_of_line_position()
+            if col == 0:
+                b.cursor_up()
+            else:
+                b.cursor_left(count=abs(relative_begin_index))
+
+
+        @self.kb.add('c-e')
+        def _(event):
+            b = event.current_buffer
+            complete_state = b.complete_state
+            relative_end_index = b.document.get_end_of_line_position()
+
+            if b.suggestion is not None and b.document.is_cursor_at_the_end:
+                suggestion = b.suggestion
+                b.insert_text(suggestion.text)
+                return
+
+            if relative_end_index == 0:
+                b.cursor_down()
+                b.cursor_right(b.document.get_end_of_line_position())
+            else:
+                b.cursor_right(count=abs(relative_end_index))
+
+
+        @self.kb.add('c-j')
+        def _(event):
+            event.current_buffer.newline()
+
 
         @self.kb.add('enter')
         def _(event):
@@ -309,8 +347,9 @@ class TDQuery:
                         query = job_detail['query']
                         error = job_detail['debug']['stderr']
                         # print("Unknown query or query error", file=sys.stderr)
-                        print(error, file = sys.stderr)
+                        print(error, file = sys.stderr,end="")
                         print(self.render_error(query, error), file = sys.stderr)
+                        print()
                     else:
                         result = PrettyTable(list(map(lambda x : x[0],job.result_schema)))
                         result.align = "l"
@@ -320,7 +359,6 @@ class TDQuery:
                             row_num += 1
 
                         self.print_table(result, mode)
-                        print()
                         print(f"({row_num} row{'s'[:row_num^1]})\n")
                 except Exception as e:
                     print(e, file=sys.stderr)
@@ -342,6 +380,7 @@ class TDQuery:
                 if self.mode == 'prompt':
                     result = self.session.prompt(
                         self.prompt,
+                        auto_suggest=AutoSuggestFromHistory(),
                         key_bindings=self.kb,
                         multiline=True,
                         prompt_continuation=self.prompt_continuation)
