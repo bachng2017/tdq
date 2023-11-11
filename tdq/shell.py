@@ -2,10 +2,9 @@
 
 import os, sys,re, argparse, csv, configparser
 import tdclient, sqlparse
-import utils
 
 from prettytable import PrettyTable
-from tdq import _version
+from tdq import _version,utils
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit import PromptSession

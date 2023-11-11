@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+- enhance SQL parsing
+- fix keybindings
+
 ## 0.1.6
 - use sqlparse for more effective parsing
 
