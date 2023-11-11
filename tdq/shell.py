@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
-import os,sys,argparse,configparser,csv
-import tdclient
+import os, sys,re, argparse, csv, configparser
+import tdclient, sqlparse
+import utils
+
 from prettytable import PrettyTable
 from tdq import _version
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-import re
 from tdq import _version
 from pygments.lexers.sql import SqlLexer
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.filters import Condition
-import sqlparse
 
 PROG = "tdq"
 # config file (created by td client)
@@ -89,11 +89,36 @@ class TDQuery:
         def _(event):
             event.current_buffer.newline()
 
+        @self.kb.add('c-b')
+        def _(event):
+            b = event.current_buffer
+            col = b.document.cursor_position_col
+            if col == 0:
+                row = b.document.cursor_position_row
+                if row != 0:
+                    b.cursor_up()
+                    relative_end_index = b.document.get_end_of_line_position()
+                    b.cursor_right(count=abs(relative_end_index))
+            else:
+                b.cursor_left()
+
+        @self.kb.add('c-f')
+        def _(event):
+            b = event.current_buffer
+            relative_end_index = b.document.get_end_of_line_position()
+            if relative_end_index == 0:
+                if not b.document.is_cursor_at_the_end:
+                    relative_start_index = b.document.get_start_of_line_position()
+                    b.cursor_down()
+                    b.cursor_left(-relative_start_index)
+            else:
+                b.cursor_right()
+
 
         @self.kb.add('enter')
         def _(event):
             # if ';' in event.current_buffer.text or '\G' in event.current_buffer.text:
-            self.process_newline(event.current_buffer.text, event.current_buffer)
+            self.process_enter(event.current_buffer.text, event.current_buffer)
 
         # read from config file
         config_path = os.path.expanduser(CONFIG_FILE)
@@ -274,10 +299,11 @@ class TDQuery:
         return '.' * (width - 1) + ' '
 
 
-    def process_newline(self, input_str, input_buffer = None):
+    def process_enter(self, input_str, input_buffer = None):
         """ Check the current input buffer for every <newline> event (Enter pressed)
             Buffer could include multi SQL queries
         """
+        # print(f"input_str = {input_str}")
 
         # only enter pressed, continue input
         if input_str.strip() == "":
@@ -296,8 +322,10 @@ class TDQuery:
                 return True
 
         # finish input and exec query
-        r = re.match(r'.*(\w+).*(;|\\G|\s)+$',input_str,re.DOTALL)
-        if r:
+        # r = re.match(r'.*(\w+).*(;|\\G|\s)+$',input_str,re.DOTALL)
+        # if r:
+        tmp = utils.split_sql(input_str)
+        if len(tmp) > 1 or tmp[0].endswith(";") or tmp[0].endswith("\G"):
             self.exec_query = True
             if input_buffer: input_buffer.validate_and_handle()
             return True
@@ -318,10 +346,7 @@ class TDQuery:
     def process_input(self, cmds, stdout = sys.stdout):
         """ process user input and write results to stdout
         """
-        # simply split the input. Need to care about the ; char is inside a string
-        # cmd_list = re.findall(r'\w.+?;|\w.+?\\G|\w.+?$',cmds,re.DOTALL)
-
-        cmd_list = sqlparse.split(cmds)
+        cmd_list = utils.split_sql(cmds)
 
         for cmd in cmd_list:
             with tdclient.Client(apikey=self.apikey,endpoint=self.endpoint) as client:
@@ -391,12 +416,11 @@ class TDQuery:
                         prompt_continuation=self.prompt_continuation)
                 if self.mode == 'file':
                     result = self.stdin.readline().rstrip()
-                    self.process_newline(result)
+                    result = self.stdin.readline().rstrip()
+                    self.process_enter(result)
             except KeyboardInterrupt: continue
             except EOFError: break
             else:
-                cmd = result.split(' ')[0].strip()
-
                 if self.exec_command:
                     self.process_command(result)
                 if self.exit_loop: break
