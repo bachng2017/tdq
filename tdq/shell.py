@@ -30,7 +30,7 @@ class TDQuery:
     def __init__(self,mode, stdin = sys.stdin, stdout = sys.stdout):
         self.mode = mode # prompt or file
 
-        self.display_mode = ''  # vertical/horizontal/csv. Empty is automatic
+        self.display_mode = 'auto'  # vertical/horizontal/csv. Empty is automatic
 
         self.stdin = stdin
         self.stdout = stdout
@@ -196,13 +196,12 @@ class TDQuery:
     def do_display(self, args):
         """ display command
         """
-        if not args in ['','vertical','horizontal','csv']:
+        if not args in ['', 'auto','vertical','horizontal','csv']:
             print("Invalid option")
             return
-        mode = "<auto>"
-        if args in ['horizontal','vertical','csv']:
+        if args != '':
             self.display_mode = args
-        print(f"current display mode is {mode}")
+        print(f"current display mode is {self.display_mode}")
 
 
     def help_display(self):
@@ -228,21 +227,17 @@ class TDQuery:
 
 
 
-    def print_table(self, table, mode = None):
+    def print_table(self, table, mode = 'horizontal'):
         """ Given a PrettyTable table instance, format each row vertically (similar to mysql's \G display)
             mode: overwrite client display mode if defined
         """
-        if self.display_mode == '':
-            _mode = mode
-        else:
-            _mode = self.display_mode
         output_format = ARGS.output_format or CSV_OUTPUT_FORMAT
 
-        if _mode == 'horizontal':
+        if mode == 'horizontal':
             print(table,file=self.stdout)
 
         # print the table in vertical direction
-        if _mode == 'vertical':
+        if mode == 'vertical':
             formatted = []
             max_field_width = max([len(x) for x in table._field_names])
             for row_i, row in enumerate(table._rows):
@@ -252,7 +247,7 @@ class TDQuery:
             print('\n'.join(formatted),file=self.stdout)
 
         # print the table in CSV format to the current stdout (could be a file)
-        if _mode == 'csv':
+        if mode == 'csv':
             if output_format == "CSV":
                 writer = csv.writer(self.stdout,quoting=csv.QUOTE_ALL)
                 for row in table._rows:
@@ -352,14 +347,14 @@ class TDQuery:
             with tdclient.Client(apikey=self.apikey,endpoint=self.endpoint) as client:
 
                 # display mode for this command
-                # if the client's display mode is not define
-                # the mode will be set by the last char of the command
+                # if the client's display mode is not defined
+                # the mode will be set by the last char of the command heuristically
                 mode = 'horizontal'
-                if self.display_mode:
-                    mode = self.display_mode
-                else:
+                if self.display_mode == 'auto':
                     if cmd[-2:] == '\G':
                         mode = 'vertical'
+                else:                        
+                    mode = self.display_mode
 
                 query_str = cmd.rstrip("\\G; \n")
                 if query_str == '': continue
