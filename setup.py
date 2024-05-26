@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 from codecs import open
 from os import path
 import tdq._version
@@ -10,11 +10,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup (
     name='tdq',
-    packages=['tdq'],
+    packages=find_packages(),
     version=tdq._version.__version__,
     license='Apache',
     install_requires=[
-        "setuptools>=40.3.0","td-client","prompt-toolkit","sqlparse"
+        "setuptools>=40.3.0","td-client","prompt-toolkit","sqlparse","prettytable"
     ],
     author='bachng',
     author_email='bachng@gmail.com',
@@ -29,5 +29,6 @@ setup (
     ],
     entry_points = {
         'console_scripts': ['tdq = tdq.shell:main'] },
+    include_package_data=True,        
     python_requires='>=3.8',
 )

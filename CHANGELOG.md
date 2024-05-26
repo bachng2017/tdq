@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.9
+- fix some typemiss and files structure
+
 ## 0.1.8
 - enhance SQL parsing
 - fix keybindings
