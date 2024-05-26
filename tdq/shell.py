@@ -161,7 +161,7 @@ class TDQuery:
 
 
     def help_help(self):
-        print("print out all availabel commands")
+        print("print out all available commands")
 
 
     def do_engine(self, args):
@@ -295,7 +295,8 @@ class TDQuery:
 
 
     def prompt_continuation(self, width, line_number, is_soft_wrap):
-        return '.' * (width - 1) + ' '
+        blank_char = ' '
+        return blank_char * (width - 1) + ' '
 
 
     def process_enter(self, input_str, input_buffer = None):
